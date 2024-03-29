@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Converse App</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OpenCV Video Feed</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/3.0.3/socket.io.js"></script>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='bootstrap.min.css') }}" />
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}" />
+  </head>
+  <body>
+    <div class="container-fluid" id="app">
+      <div class="row">
+        <div class="col">
+          <h2 id="app-title">Converse!</h2>
+        </div>
+      </div>
+      <div class="row">
+      
+        </div>
+        <div class="col-md-6" id="real-time-video">
+          <h3 id="prediction-title">Prediction:</h3>
+          <button onclick="runPythonFile()">Run Python File</button>
+  
+      <script>
+          function runPythonFile() {
+              // This will make a request to the Flask server to run the Python file
+              fetch('/run_python_file')
+                  .then(response => response.text())
+                  .then(result => alert(result))
+                  .catch(error => console.error('Error:', error));
+          }
+      </script>
+          <div class="display">
+
+            <div id="prediction"></div>
+            <div id="prediction-feed"></div>
+            <h1>Camera Feed</h1>
+            
+
+            <img id="video-feed" src="" alt="Video Feed" style="width: 100%;">
+
+            <script>
+                var socket = io.connect('http://' + document.domain + ':' + location.port);
+        
+                socket.on('video_frame', function(data) {
+                    document.getElementById('video-feed').src = 'data:image/jpg;base64,' + data.frame;
+                });
+            </script>
+
+            
+
+        
+          </div>
+        </div>
+        
+      </div>
+    </div>
+    <div>
+     
+
+      
+    </div>
+
+    <script src="{{ url_for('static', filename='jquery.min.js') }}"></script>
+    <script>
+      // declare prev_word as array
+      var prev_word = [];
+      var sentence = "";
+      setInterval(function() {
+        $.ajax({
+          type: 'GET',
+          url: "/refresh_data",
+          success:function(data){
+
+            // if data.data is not in prev_word array then push
+            if(prev_word.indexOf(data.data) == -1) {
+              prev_word.push(data.data);
+            }
+
+            console.log('Array: ');
+            console.log(prev_word);
+
+            // if prev_word is not empty then join the array with space
+            if(prev_word.length != 0) {
+              sentence = prev_word.join(" ");
+            }
+
+            $('#prediction').html('<div class="current-update">' + sentence + '</div>');
+
+            // if prev_word array length is >=5 then clear the array
+            if(prev_word.length >= 5) {
+              prev_word = [];
+            }
+
+            $('#prediction-feed').prepend('<div class="update">' + data.data + '</div>');
+          }
+        });
+      }, 500);
+    </script>
+  </body>
+</html>
