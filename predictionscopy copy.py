@@ -91,76 +91,17 @@ def draw_text(image, text, position, font=cv2.FONT_HERSHEY_SIMPLEX, font_scale=1
 # Rest of the code remains the same...
 
 actions = np.array(['hello','i love you','my','Name','thanks','What','Your'])
-model = tf.keras.models.load_model('./action.h5')
+model = tf.keras.models.load_model('action7.h5')
 
 
 
 
 
 # Initialize variables for gesture recognition and sentence formation
-# sequence = []
-# sentence = []
-# predictions = []
-# threshold = 0.5
-
-# # Open the video capture
-# cap = cv2.VideoCapture(0)
-
-# # Set mediapipe model 
-# with mp_holistic.Holistic(min_detection_confidence=0.5, min_tracking_confidence=0.5) as holistic:
-#     while cap.isOpened():
-#         # Read frame from video capture
-#         ret, frame = cap.read()
-
-#         if not ret:
-#             break
-
-#         # Make detections
-#         image, results = mediapipe_detection(frame, holistic)
-#         print(results)
-
-#         # Draw landmarks
-#         draw_styled_landmarks(image, results)
-
-#         # Prediction logic
-#         keypoints = extract_keypoints(results)
-#         sequence.append(keypoints)
-#         sequence = sequence[-30:]
-
-#         if len(sequence) == 30:
-#             res = model.predict(np.expand_dims(sequence, axis=0))[0]
-#             print(actions[np.argmax(res)])
-#             predictions.append(np.argmax(res))
-
-#             # Add recognized gesture to sentence if it surpasses threshold
-#             if np.unique(predictions[-10:])[0] == np.argmax(res):
-#                 if res[np.argmax(res)] > threshold:
-#                     if len(sentence) > 0:
-#                         if actions[np.argmax(res)] != sentence[-1]:
-#                             sentence.append(actions[np.argmax(res)])
-#                     else:
-#                         sentence.append(actions[np.argmax(res)])
-
-#             # Limit the length of the sentence to 5
-#             if len(sentence) > 5:
-#                 sentence = sentence[-5:]
-
-#         # Draw the recognized gestures as text on the image
-#         text = ' '.join(sentence)
-#         draw_text(image, text, (10, 30))
-
-#         # Show the image with recognized gestures
-#         cv2.imshow('OpenCV Feed', image)
-
-#         # Break the loop if 'q' is pressed
-#         if cv2.waitKey(10) & 0xFF == ord('q'):
-#             break
-
-#     # Release the video capture and close OpenCV windows
-#     cap.release()
-#     cv2.destroyAllWindows()
-
-
+sequence = []
+sentence = []
+predictions = []
+threshold = 0.5
 
 # Open the video capture
 cap = cv2.VideoCapture(0)
@@ -181,15 +122,6 @@ with mp_holistic.Holistic(min_detection_confidence=0.5, min_tracking_confidence=
         # Draw landmarks
         draw_styled_landmarks(image, results)
 
-        # Initialize variables for gesture recognition and sentence formation
-        sequence = []
-        sentence = []
-        predictions = []
-        threshold = 0.5
-        recognized_gesture = None
-        recognized_frames = 0
-        consensus_frames = 15  # Adjust this value as needed
-
         # Prediction logic
         keypoints = extract_keypoints(results)
         sequence.append(keypoints)
@@ -203,19 +135,11 @@ with mp_holistic.Holistic(min_detection_confidence=0.5, min_tracking_confidence=
             # Add recognized gesture to sentence if it surpasses threshold
             if np.unique(predictions[-10:])[0] == np.argmax(res):
                 if res[np.argmax(res)] > threshold:
-                    recognized_gesture = actions[np.argmax(res)]
-                    recognized_frames += 1
-                else:
-                    recognized_gesture = None
-                    recognized_frames = 0
-
-            # If a gesture has been recognized consistently over consensus_frames frames, add it to the sentence
-            if recognized_frames >= consensus_frames:
-                if len(sentence) > 0:
-                    if recognized_gesture != sentence[-1]:
-                        sentence.append(recognized_gesture)
-                else:
-                    sentence.append(recognized_gesture)
+                    if len(sentence) > 0:
+                        if actions[np.argmax(res)] != sentence[-1]:
+                            sentence.append(actions[np.argmax(res)])
+                    else:
+                        sentence.append(actions[np.argmax(res)])
 
             # Limit the length of the sentence to 5
             if len(sentence) > 5:
@@ -232,6 +156,6 @@ with mp_holistic.Holistic(min_detection_confidence=0.5, min_tracking_confidence=
         if cv2.waitKey(10) & 0xFF == ord('q'):
             break
 
-# Release the video capture and close OpenCV windows
-cap.release()
-cv2.destroyAllWindows()
+    # Release the video capture and close OpenCV windows
+    cap.release()
+    cv2.destroyAllWindows()
